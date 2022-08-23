@@ -13,43 +13,43 @@ public class UserRepositoryImpl implements UserRepository {
     private long id = 0L;
 
     @Override
-    public List<User> getAll() {
-        return new ArrayList<> (repository.values());
+    public List<User> getAll () {
+        return new ArrayList<> (repository.values ());
     }
 
     @Override
     public Optional<User> getWithId (long id) {
-        return Optional.ofNullable(repository.get(id));
+        return Optional.ofNullable (repository.get (id));
     }
 
     @Override
-    public User create(User user) {
-        user.setId(genId());
-        repository.put(id, user);
+    public User create (User user) {
+        user.setId (genId ());
+        repository.put (id, user);
         log.info ("Added user {}", user);
         return user;
     }
 
     @Override
-    public void remove(long id) {
-        repository.remove(id);
+    public void remove (long id) {
+        repository.remove (id);
     }
 
     @Override
-    public User update(long id, User user) {
-        repository.put(id, user);
+    public User update (long id, User user) {
+        repository.put (id, user);
         log.info ("Updated user {}", user);
         return user;
     }
 
     @Override
     public Optional<User> getWithEmail (String email) {
-        return getAll().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
+        return getAll ().stream ()
+                .filter (user -> user.getEmail ().equals (email))
+                .findFirst ();
     }
 
-    private Long genId() {
+    private Long genId () {
         return ++id;
     }
 }

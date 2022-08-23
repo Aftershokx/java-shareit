@@ -21,38 +21,38 @@ public class ItemController {
     private final UserService userService;
 
     @PostMapping
-    public ItemDto create(@RequestHeader(USER_HEADER) long userId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDto create (@RequestHeader(USER_HEADER) long userId, @Valid @RequestBody ItemDto itemDto) {
         User user = userService.getWithId (userId);
-        Item item = ItemMapper.toItem(user, itemDto);
-        Item itemSaved = itemService.create(userId, item);
-        return ItemMapper.toItemDto(itemSaved);
+        Item item = ItemMapper.toItem (user, itemDto);
+        Item itemSaved = itemService.create (userId, item);
+        return ItemMapper.toItemDto (itemSaved);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId,
-                          @RequestBody ItemDto itemDto) {
+    public ItemDto update (@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId,
+                           @RequestBody ItemDto itemDto) {
         User user = userService.getWithId (userId);
-        Item item = ItemMapper.toItem(user, itemDto);
-        Item itemUpdated = itemService.update(userId, itemId, item);
-        return ItemMapper.toItemDto(itemUpdated);
+        Item item = ItemMapper.toItem (user, itemDto);
+        Item itemUpdated = itemService.update (userId, itemId, item);
+        return ItemMapper.toItemDto (itemUpdated);
     }
 
     @GetMapping("/{id}")
     public ItemDto getWithId (@PathVariable long id) {
-        return ItemMapper.toItemDto(itemService.getWithId (id));
+        return ItemMapper.toItemDto (itemService.getWithId (id));
     }
 
     @GetMapping
-    public List<ItemDto> getAllByUser(@RequestHeader(USER_HEADER) long userId) {
-        return itemService.getAllWithUser (userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+    public List<ItemDto> getAllByUser (@RequestHeader(USER_HEADER) long userId) {
+        return itemService.getAllWithUser (userId).stream ()
+                .map (ItemMapper::toItemDto)
+                .collect (Collectors.toList ());
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByText(@RequestParam String text) {
-        return itemService.searchWithText (text).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+    public List<ItemDto> searchByText (@RequestParam String text) {
+        return itemService.searchWithText (text).stream ()
+                .map (ItemMapper::toItemDto)
+                .collect (Collectors.toList ());
     }
 }

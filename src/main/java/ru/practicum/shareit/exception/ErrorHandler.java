@@ -12,14 +12,14 @@ import java.util.NoSuchElementException;
 @Slf4j
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<String> handleValidationException(NoSuchElementException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> handleValidationException (NoSuchElementException e) {
+        log.error (e.getMessage ());
+        return new ResponseEntity<> (e.getMessage (), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
     public ResponseEntity<String> handleNotExistException (AlreadyExistException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        log.error (e.getMessage ());
+        return new ResponseEntity<> (e.getMessage (), HttpStatus.CONFLICT);
     }
 }
