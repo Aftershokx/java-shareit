@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
@@ -19,41 +21,44 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     @Override
-    public Item create (long userId, Item item) {
-        User owner = userRepository.getWithId (userId).orElseThrow (() ->
+    public Item create (long userId, ItemDto itemDto) {
+        User owner = userRepository.getById (userId).orElseThrow (() ->
                 new NoSuchElementException ("User not found"));
+        Item item = ItemMapper.toItem (owner, itemDto);
         item.setOwner (owner);
         return itemRepository.create (item);
     }
 
     @Override
-    public Item update (long userId, long itemId, Item item) {
-        Item updatedItem = getValidItemDto (userId, itemId, item);
-        return itemRepository.update (itemId, updatedItem);
+    public Item update (long userId, long itemId, ItemDto itemDto) {
+        User user = userRepository.getById (userId).orElseThrow (() ->
+                new NoSuchElementException ("User not found"));
+        Item item = ItemMapper.toItem (user, itemDto);
+        return itemRepository.update (itemId, getValidItemDto (userId, itemId, item));
     }
 
     @Override
-    public Item getWithId (long id) {
-        return itemRepository.getWithId (id).orElseThrow (() ->
-                new NoSuchElementException ("Item with id " + id + " not found"));
+    public Item getById (long id) {
+        return itemRepository.getById (id).orElseThrow (() ->
+                new NoSuchElementException ("Item By id " + id + " not found"));
     }
 
     @Override
-    public List<Item> searchWithText (String text) {
+    public List<Item> searchByText (String text) {
         if (text != null && !text.isBlank ())
-            return itemRepository.searchWithText (text.toLowerCase (Locale.ROOT));
+            return itemRepository.searchByText (text.toLowerCase (Locale.ROOT));
         return new ArrayList<> ();
     }
 
     @Override
-    public List<Item> getAllWithUser (long userId) {
-        return itemRepository.getAllWithUser (userId);
+    public List<Item> getAllByUser (long userId) {
+        return itemRepository.getAllByUser (userId);
     }
 
     private Item getValidItemDto (long userId, long itemId, Item item) {
-        Item updatedItem = itemRepository.getWithId (itemId).orElseThrow (
-                () -> new NoSuchElementException ("Item with id " + itemId + " not found"));
-        if (userRepository.getWithId (userId).isPresent () && updatedItem.getOwner ().getId () != userId)
+        Item updatedItem = itemRepository.getById (itemId).orElseThrow (
+                () -> new NoSuchElementException ("Item By id " + itemId + " not found"));
+        if (userRepository.getById (userId).isPresent () && updatedItem.getOwner ().getId () != userId)
             throw new NoSuchElementException ("Only owner can moderate items");
         if (item.getName () != null && !item.getName ().isBlank ())
             updatedItem.setName (item.getName ());

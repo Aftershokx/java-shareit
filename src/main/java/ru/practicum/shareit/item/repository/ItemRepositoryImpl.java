@@ -19,7 +19,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> getWithId (long id) {
+    public Optional<Item> getById (long id) {
         return Optional.ofNullable (repository.get (id));
     }
 
@@ -32,7 +32,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> searchWithText (String text) {
+    public List<Item> searchByText (String text) {
         return getAll ().stream ()
                 .filter (Item::getAvailable)
                 .filter (item -> item.getName ().toLowerCase (Locale.ROOT).contains (text) ||
@@ -41,7 +41,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> getAllWithUser (long userId) {
+    public List<Item> getAllByUser (long userId) {
         return getAll ().stream ()
                 .filter (itemDto -> itemDto.getOwner ().getId () == userId)
                 .collect (Collectors.toList ());

@@ -18,7 +18,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> getWithId (long id) {
+    public Optional<User> getById (long id) {
         return Optional.ofNullable (repository.get (id));
     }
 
@@ -43,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> getWithEmail (String email) {
+    public Optional<User> getByEmail (String email) {
         return getAll ().stream ()
                 .filter (user -> user.getEmail ().equals (email))
                 .findFirst ();

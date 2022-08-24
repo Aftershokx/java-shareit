@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface UserRepository {
     List<User> getAll ();
 
-    Optional<User> getWithId (long id);
+    Optional<User> getById (long id);
 
     User create (User user);
 
@@ -16,5 +16,5 @@ public interface UserRepository {
 
     User update (long id, User user);
 
-    Optional<User> getWithEmail (String email);
+    Optional<User> getByEmail (String email);
 }

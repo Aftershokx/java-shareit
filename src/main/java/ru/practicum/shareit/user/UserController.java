@@ -24,15 +24,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserDto getWithId (@PathVariable long id) {
-        return UserMapper.toUserDto (userService.getWithId (id));
+    public UserDto getById (@PathVariable long id) {
+        return UserMapper.toUserDto (userService.getById (id));
     }
 
     @PostMapping
     public UserDto create (@Valid @RequestBody UserDto userDto) {
-        User user = UserMapper.toUser (userDto);
         return UserMapper.toUserDto (
-                userService.create (user)
+                userService.create (userDto)
         );
     }
 

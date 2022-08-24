@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.AlreadyExistException;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -22,14 +24,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getWithId (long id) {
-        return repository.getWithId (id).orElseThrow (() ->
-                new NoSuchElementException ("User with id + " + id + " not found"));
+    public User getById (long id) {
+        return repository.getById (id).orElseThrow (() ->
+                new NoSuchElementException ("User By id + " + id + " not found"));
     }
 
     @Override
-    public User create (User user) {
-        repository.getWithEmail (user.getEmail ()).ifPresent (u -> {
+    public User create (UserDto userDto) {
+        User user = UserMapper.toUser (userDto);
+        repository.getByEmail (user.getEmail ()).ifPresent (u -> {
             throw new AlreadyExistException ("User already exists");
         });
         return repository.create (user);
@@ -37,10 +40,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void remove (long id) {
-        if (repository.getWithId (id).isPresent ()) {
+        if (repository.getById (id).isPresent ()) {
             repository.remove (id);
         } else {
-            throw new NoSuchElementException ("User with id + " + id + " not found");
+            throw new NoSuchElementException ("User By id + " + id + " not found");
         }
     }
 
@@ -50,18 +53,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getValidUser (long userId, User user) {
-        if (repository.getWithId (userId).isEmpty ()) {
-            throw new NoSuchElementException ("User with id + " + userId + " not found");
+        if (repository.getById (userId).isEmpty ()) {
+            throw new NoSuchElementException ("User By id + " + userId + " not found");
         }
 
-        User updated = repository.getWithId (userId).get ();
+        User updated = repository.getById (userId).get ();
         updated.setId (userId);
 
         if (user.getName () != null && !user.getName ().isBlank ()) {
             updated.setName (user.getName ());
         }
         if (user.getEmail () != null && user.getEmail ().contains ("@") && !user.getEmail ().isBlank ()) {
-            repository.getWithEmail (user.getEmail ()).ifPresent (u -> {
+            repository.getByEmail (user.getEmail ()).ifPresent (u -> {
                 throw new AlreadyExistException ("Email already exists");
             });
             updated.setEmail (user.getEmail ());
