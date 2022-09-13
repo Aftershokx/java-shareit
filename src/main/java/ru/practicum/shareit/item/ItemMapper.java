@@ -27,16 +27,16 @@ public class ItemMapper {
     }
 
     public static ItemDtoForBooking toItemDtoWithBooking(Item item) {
-        return ItemDtoForBooking.builder().
-                id(item.getId()).
-                name(item.getName()).
-                description(item.getDescription()).
-                available(item.getAvailable()).
-                comments(item.getComments() != null && item.getComments().size() != 0 ? item.getComments().stream()
-                        .map(CommentMapper::toCommentDto).collect(Collectors.toList()) : new ArrayList<>()).
-                lastBooking(item.getLastBooking() != null ? BookingMapper.toBookingDtoForItem(item.getLastBooking()) : null).
-                nextBooking(item.getNextBooking() != null ? BookingMapper.toBookingDtoForItem(item.getNextBooking()) : null).
-                build();
+        return ItemDtoForBooking.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .comments(item.getComments() != null && item.getComments().size() != 0 ? item.getComments().stream()
+                        .map(CommentMapper::toCommentDto).collect(Collectors.toList()) : new ArrayList<>())
+                .lastBooking(item.getLastBooking() != null ? BookingMapper.toBookingDtoForItem(item.getLastBooking()) : null)
+                .nextBooking(item.getNextBooking() != null ? BookingMapper.toBookingDtoForItem(item.getNextBooking()) : null)
+                .build();
     }
 
     public static Item toItem(User user, ItemDto itemDto) {
