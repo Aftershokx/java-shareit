@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
     public Booking bookingConfirmation(Long userId, Long bookingId, boolean approved) {
         Booking booking = getBooking(bookingId);
         if (booking.getStatus() == BookingStatus.APPROVED) {
-            throw new ItemNotAvailableException("Нельзя изменить статус одобренного бронирования");
+            throw new ItemNotAvailableException("Cant change approved bookings");
         }
         BookingStatus status;
         if (approved) {
@@ -56,7 +56,7 @@ public class BookingServiceImpl implements BookingService {
         if (checkOwner(userId, booking)) {
             booking.setStatus(status);
         } else {
-            throw new NoSuchElementException("Пользователь не является владельцем вещи");
+            throw new NoSuchElementException("User does not own this item");
         }
 
         return bookingRepository.save(booking);
@@ -68,8 +68,7 @@ public class BookingServiceImpl implements BookingService {
         if (checkOwner(userId, booking) || booking.getBooker().getId() == userId) {
             return booking;
         } else {
-            throw new NoSuchElementException("Ошибка доступа, пользователь не является" +
-                    " владельцем или арендатором вещи");
+            throw new NoSuchElementException("User does not own this item");
         }
     }
 
@@ -84,32 +83,32 @@ public class BookingServiceImpl implements BookingService {
                     return new ArrayList<>(bookingRepository
                             .findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(userId, LocalDateTime.now(),
                                     LocalDateTime.now())
-                            .orElseThrow(() -> new NoSuchElementException("Текущих бронирований для пользователя "
-                                    + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Current bookings for user "
+                                    + userId + " not found")));
                 case PAST:
                     return new ArrayList<>(bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(userId,
                                     LocalDateTime.now())
-                            .orElseThrow(() -> new NoSuchElementException("Завершенных бронирований для пользователя "
-                                    + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Past bookings for user "
+                                    + userId + " not found")));
                 case FUTURE:
                     return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(userId,
                                     LocalDateTime.now())
-                            .orElseThrow(() -> new NoSuchElementException("Будущих бронирований для пользователя "
-                                    + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Future bookings for user "
+                                    + userId + " not found")));
                 case WAITING:
                     return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(userId,
                                     BookingStatus.WAITING)
-                            .orElseThrow(() -> new NoSuchElementException("Ожидающих подтверждения бронирований " +
-                                    "для пользователя " + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Waiting bookings for user  " +
+                                    userId + " not found")));
                 case REJECTED:
                     return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(userId,
                                     BookingStatus.REJECTED)
-                            .orElseThrow(() -> new NoSuchElementException("Отклоненных бронирований для пользователя "
-                                    + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Rejected bookings for user "
+                                    + userId + " not found")));
                 default:
                     return new ArrayList<>(bookingRepository.findAllByBooker_IdOrderByStartDesc(userId)
-                            .orElseThrow(() -> new NoSuchElementException("Бронирований для пользователя "
-                                    + userId + " не найдено")));
+                            .orElseThrow(() -> new NoSuchElementException("Bookings for user "
+                                    + userId + " not found")));
             }
         } else throw new UnsupportedStatusException("Unknown state: " + state);
     }
@@ -119,7 +118,7 @@ public class BookingServiceImpl implements BookingService {
         List<Item> items = itemRepository.findByOwner(userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("UserNotFound By id not found")));
         if (items.size() == 0) {
-            throw new NoSuchElementException("У данного пользователя " + userId + " нет вещей");
+            throw new NoSuchElementException("User " + userId + " does not own any items");
         }
         List<Booking> bookings = new ArrayList<>();
 
@@ -133,8 +132,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Текущих бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Current bookings for user "
+                                + userId + " not found");
                     }
                 case PAST:
                     items.forEach(item -> bookings.addAll(bookingRepository
@@ -142,8 +141,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Прошедших бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Past bookings for user "
+                                + userId + " not found");
                     }
                 case FUTURE:
                     items.forEach(item -> bookings.addAll(bookingRepository
@@ -151,8 +150,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Прошедших бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Future bookings for user "
+                                + userId + " not found");
                     }
                 case WAITING:
                     items.forEach(item -> bookings.addAll(bookingRepository
@@ -160,8 +159,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Прошедших бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Waiting bookings for user  " +
+                                userId + " not found");
                     }
                 case REJECTED:
                     items.forEach(item -> bookings.addAll(bookingRepository
@@ -169,8 +168,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Прошедших бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Rejected bookings for user "
+                                + userId + " not found");
                     }
                 default:
                     items.forEach(item -> bookings.addAll(bookingRepository
@@ -178,8 +177,8 @@ public class BookingServiceImpl implements BookingService {
                     if (bookings.size() != 0) {
                         return bookings;
                     } else {
-                        throw new NoSuchElementException("Прошедших бронирований для вещей пользователя "
-                                + userId + " не найдено");
+                        throw new NoSuchElementException("Bookings for user "
+                                + userId + " not found");
                     }
             }
         } else throw new UnsupportedStatusException("Unknown state: " + state);
@@ -187,8 +186,8 @@ public class BookingServiceImpl implements BookingService {
 
     private Booking getBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Бронирования с таким id: "
-                        + bookingId + " не существует"));
+                .orElseThrow(() -> new NoSuchElementException("Booking with id: "
+                        + bookingId + " not exist"));
     }
 
     private boolean checkOwner(Long userId, Booking booking) {
@@ -197,22 +196,20 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkItemAvailable(Item item) {
         if (!item.getAvailable()) {
-            throw new ItemNotAvailableException("Вещь " + item.getId() + " недоступна");
+            throw new ItemNotAvailableException("Item " + item.getId() + " unreliable");
         }
     }
 
     private void checkInputBookingDto(long userId, BookingInputDto bookingInputDto) throws ValidationException {
         if (bookingInputDto.getStartDate().isAfter(bookingInputDto.getEndDate())) {
-            throw new WrongDateException("Время начала бронирования не может быть позже времени" +
-                    " окончания бронирования");
+            throw new WrongDateException("Booking start time cannot be earlier then end of booking");
         }
         if (bookingInputDto.getStartDate() == bookingInputDto.getEndDate()) {
-            throw new WrongDateException("Время начала бронирования не может быть равно времени" +
-                    " окончания бронирования");
+            throw new WrongDateException("Booking start time cannot be equals with end date");
         }
         if (userId == itemRepository.findById(bookingInputDto.getItemId()).orElseThrow(() ->
                 new NoSuchElementException("Item By id not found")).getOwner().getId()) {
-            throw new NoSuchElementException("Пользователь " + userId + " не может забронировать свою вещь "
+            throw new NoSuchElementException("user " + userId + " cannot book git own item "
                     + bookingInputDto.getItemId());
         }
     }

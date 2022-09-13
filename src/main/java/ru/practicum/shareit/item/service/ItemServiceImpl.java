@@ -84,14 +84,14 @@ public class ItemServiceImpl implements ItemService {
                             new NoSuchElementException("User not found")),
                     getById(itemId, userId)));
         } else {
-            throw new ItemNotAvailableException("Пользователь " + userId + " не брал вещь " + itemId + " в аренду");
+            throw new ItemNotAvailableException("User " + userId + " has no booking for " + itemId + " item");
         }
     }
 
     private void checkOwner(Long userId, Long itemId) {
         Item item = getById(itemId, userId);
         if (item.getOwner().getId() != userId) {
-            throw new NoSuchElementException("Пользователь не является владельцем вещи");
+            throw new NoSuchElementException("User does not own this item");
         }
     }
 
