@@ -31,22 +31,22 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Booking add (Long userId, BookingRequestDto bookingRequestDto) throws ValidationException {
-        checkInputBookingDto (userId, bookingRequestDto);
-        bookingRequestDto.setStatus (BookingStatus.WAITING);
-        checkItemAvailable (itemRepository.findById (bookingRequestDto.getItemId ()).orElseThrow (() ->
-                new NoSuchElementException ("Item By id not found")));
-        return bookingRepository.save (BookingMapper.toBooking (bookingRequestDto, userRepository.findById (userId).orElseThrow (() ->
-                        new NoSuchElementException ("UserNotFound By id not found")),
-                itemRepository.findById (bookingRequestDto.getItemId ()).orElseThrow (() ->
-                        new NoSuchElementException ("Item By id not found"))));
+    public Booking add(Long userId, BookingRequestDto bookingRequestDto) throws ValidationException{
+        checkInputBookingDto(userId, bookingRequestDto);
+        bookingRequestDto.setStatus(BookingStatus.WAITING);
+        checkItemAvailable(itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
+                new NoSuchElementException("Item By id not found")));
+        return bookingRepository.save(BookingMapper.toBooking(bookingRequestDto, userRepository.findById(userId).orElseThrow(() ->
+                        new NoSuchElementException("UserNotFound By id not found")),
+                itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
+                        new NoSuchElementException("Item By id not found"))));
     }
 
     @Override
-    public Booking bookingConfirmation (Long userId, Long bookingId, boolean approved) {
-        Booking booking = getBooking (bookingId);
-        if (booking.getStatus () == BookingStatus.APPROVED) {
-            throw new ItemNotAvailableException ("Cant change approved bookings");
+    public Booking bookingConfirmation(Long userId, Long bookingId, boolean approved){
+        Booking booking = getBooking(bookingId);
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            throw new ItemNotAvailableException("Cant change approved bookings");
         }
         BookingStatus status;
         if (approved) {
@@ -54,198 +54,198 @@ public class BookingServiceImpl implements BookingService {
         } else {
             status = BookingStatus.REJECTED;
         }
-        if (checkOwner (userId, booking)) {
-            booking.setStatus (status);
+        if (checkOwner(userId, booking)) {
+            booking.setStatus(status);
         } else {
-            throw new NoSuchElementException ("User does not own this item");
+            throw new NoSuchElementException("User does not own this item");
         }
 
-        return bookingRepository.save (booking);
+        return bookingRepository.save(booking);
     }
 
     @Override
-    public Booking getById (Long userId, Long bookingId) {
-        Booking booking = getBooking (bookingId);
-        if (checkOwner (userId, booking) || booking.getBooker ().getId () == userId) {
+    public Booking getById(Long userId, Long bookingId){
+        Booking booking = getBooking(bookingId);
+        if (checkOwner(userId, booking) || booking.getBooker().getId() == userId) {
             return booking;
         } else {
-            throw new NoSuchElementException ("User does not own this item");
+            throw new NoSuchElementException("User does not own this item");
         }
     }
 
     @Override
-    public List<Booking> getAllBookingByUser (Long userId, String state) {
-        userRepository.findById (userId).orElseThrow (() ->
-                new NoSuchElementException ("User By id + " + userId + " not found"));
-        switch (checkStatus (state).orElseThrow (() -> new UnsupportedStatusException ("Unknown state: " + state))) {
+    public List<Booking> getAllBookingByUser(Long userId, String state){
+        userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchElementException("User By id + " + userId + " not found"));
+        switch (checkStatus(state).orElseThrow(() -> new UnsupportedStatusException("Unknown state: " + state))) {
             case CURRENT:
-                return new ArrayList<> (bookingRepository
-                        .findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc (userId, LocalDateTime.now (),
-                                LocalDateTime.now ())
-                        .orElseThrow (() -> new NoSuchElementException ("Current bookings for user "
+                return new ArrayList<>(bookingRepository
+                        .findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(userId, LocalDateTime.now(),
+                                LocalDateTime.now())
+                        .orElseThrow(() -> new NoSuchElementException("Current bookings for user "
                                 + userId + " not found")));
             case PAST:
-                return new ArrayList<> (bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc (userId,
-                                LocalDateTime.now ())
-                        .orElseThrow (() -> new NoSuchElementException ("Past bookings for user "
+                return new ArrayList<>(bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(userId,
+                                LocalDateTime.now())
+                        .orElseThrow(() -> new NoSuchElementException("Past bookings for user "
                                 + userId + " not found")));
             case FUTURE:
-                return new ArrayList<> (bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc (userId,
-                                LocalDateTime.now ())
-                        .orElseThrow (() -> new NoSuchElementException ("Future bookings for user "
+                return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(userId,
+                                LocalDateTime.now())
+                        .orElseThrow(() -> new NoSuchElementException("Future bookings for user "
                                 + userId + " not found")));
             case WAITING:
-                return new ArrayList<> (bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc (userId,
+                return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(userId,
                                 BookingStatus.WAITING)
-                        .orElseThrow (() -> new NoSuchElementException ("Waiting bookings for user  " +
+                        .orElseThrow(() -> new NoSuchElementException("Waiting bookings for user  " +
                                 userId + " not found")));
             case REJECTED:
-                return new ArrayList<> (bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc (userId,
+                return new ArrayList<>(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(userId,
                                 BookingStatus.REJECTED)
-                        .orElseThrow (() -> new NoSuchElementException ("Rejected bookings for user "
+                        .orElseThrow(() -> new NoSuchElementException("Rejected bookings for user "
                                 + userId + " not found")));
             default:
-                return new ArrayList<> (bookingRepository.findAllByBooker_IdOrderByStartDesc (userId)
-                        .orElseThrow (() -> new NoSuchElementException ("Bookings for user "
+                return new ArrayList<>(bookingRepository.findAllByBooker_IdOrderByStartDesc(userId)
+                        .orElseThrow(() -> new NoSuchElementException("Bookings for user "
                                 + userId + " not found")));
         }
     }
 
     @Override
-    public List<Booking> getAllBookingByOwner (Long userId, String state) {
-        List<Item> items = itemRepository.findByOwner (userRepository.findById (userId).orElseThrow (() ->
-                new NoSuchElementException ("UserNotFound By id not found")));
-        if (items.size () == 0) {
-            throw new NoSuchElementException ("User " + userId + " does not own any items");
+    public List<Booking> getAllBookingByOwner(Long userId, String state){
+        List<Item> items = itemRepository.findByOwner(userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchElementException("UserNotFound By id not found")));
+        if (items.size() == 0) {
+            throw new NoSuchElementException("User " + userId + " does not own any items");
         }
 
-        List<Booking> bookings = new ArrayList<> ();
+        List<Booking> bookings = new ArrayList<>();
 
-        switch (checkStatus (state).orElseThrow (() -> new UnsupportedStatusException ("Unknown state: " + state))) {
+        switch (checkStatus(state).orElseThrow(() -> new UnsupportedStatusException("Unknown state: " + state))) {
             case CURRENT:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdAndStartBeforeAndEndAfterOrderByStartDesc (item.getId (), LocalDateTime.now (),
-                                LocalDateTime.now ())));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdAndStartBeforeAndEndAfterOrderByStartDesc(item.getId(), LocalDateTime.now(),
+                                LocalDateTime.now())));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Current bookings for user "
+                    throw new NoSuchElementException("Current bookings for user "
                             + userId + " not found");
                 }
             case PAST:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdAndEndIsBeforeOrderByStartDesc (item.getId (), LocalDateTime.now ())));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdAndEndIsBeforeOrderByStartDesc(item.getId(), LocalDateTime.now())));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Past bookings for user "
+                    throw new NoSuchElementException("Past bookings for user "
                             + userId + " not found");
                 }
             case FUTURE:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdAndStartIsAfterOrderByStartDesc (item.getId (), LocalDateTime.now ())));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdAndStartIsAfterOrderByStartDesc(item.getId(), LocalDateTime.now())));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Future bookings for user "
+                    throw new NoSuchElementException("Future bookings for user "
                             + userId + " not found");
                 }
             case WAITING:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdAndStatusOrderByStartDesc (item.getId (), BookingStatus.WAITING)));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdAndStatusOrderByStartDesc(item.getId(), BookingStatus.WAITING)));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Waiting bookings for user  " +
+                    throw new NoSuchElementException("Waiting bookings for user  " +
                             userId + " not found");
                 }
             case REJECTED:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdAndStatusOrderByStartDesc (item.getId (), BookingStatus.REJECTED)));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdAndStatusOrderByStartDesc(item.getId(), BookingStatus.REJECTED)));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Rejected bookings for user "
+                    throw new NoSuchElementException("Rejected bookings for user "
                             + userId + " not found");
                 }
             default:
-                items.forEach (item -> bookings.addAll (bookingRepository
-                        .findAllByItem_IdOrderByStartDesc (item.getId ())));
-                if (bookings.size () != 0) {
+                items.forEach(item -> bookings.addAll(bookingRepository
+                        .findAllByItem_IdOrderByStartDesc(item.getId())));
+                if (bookings.size() != 0) {
                     return bookings;
                 } else {
-                    throw new NoSuchElementException ("Bookings for user "
+                    throw new NoSuchElementException("Bookings for user "
                             + userId + " not found");
                 }
         }
     }
 
     @Override
-    public Optional<Booking> getLastBooking (long itemId) {
-        return bookingRepository.findFirstBookingByItem_IdAndEndIsBeforeOrderByEndDesc (itemId,
-                LocalDateTime.now ());
+    public Optional<Booking> getLastBooking(long itemId){
+        return bookingRepository.findFirstBookingByItem_IdAndEndIsBeforeOrderByEndDesc(itemId,
+                LocalDateTime.now());
     }
 
     @Override
-    public Optional<Booking> getNextBooking (long itemId) {
-        return bookingRepository.findFirstBookingByItem_IdAndStartIsAfterOrderByStart (itemId,
-                LocalDateTime.now ());
+    public Optional<Booking> getNextBooking(long itemId){
+        return bookingRepository.findFirstBookingByItem_IdAndStartIsAfterOrderByStart(itemId,
+                LocalDateTime.now());
     }
 
     @Override
-    public boolean checkBooking (long userId, long itemId, BookingStatus status) {
-        return bookingRepository.existsBookingByBooker_IdAndItem_IdAndStatusEqualsAndEndIsBefore (userId,
-                itemId, status, LocalDateTime.now ());
+    public boolean checkBooking(long userId, long itemId, BookingStatus status){
+        return bookingRepository.existsBookingByBooker_IdAndItem_IdAndStatusEqualsAndEndIsBefore(userId,
+                itemId, status, LocalDateTime.now());
     }
 
-    private Booking getBooking (Long bookingId) {
-        return bookingRepository.findById (bookingId)
-                .orElseThrow (() -> new NoSuchElementException ("Booking with id: "
+    private Booking getBooking(Long bookingId){
+        return bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking with id: "
                         + bookingId + " not exist"));
     }
 
-    private boolean checkOwner (Long userId, Booking booking) {
-        return booking.getItem ().getOwner ().getId () == userId;
+    private boolean checkOwner(Long userId, Booking booking){
+        return booking.getItem().getOwner().getId() == userId;
     }
 
-    private void checkItemAvailable (Item item) {
-        if (!item.getAvailable ()) {
-            throw new ItemNotAvailableException ("Item " + item.getId () + " unreliable");
-        }
-    }
-
-    private void checkInputBookingDto (long userId, BookingRequestDto bookingRequestDto) throws ValidationException {
-        if (bookingRequestDto.getStartDate ().isAfter (bookingRequestDto.getEndDate ())) {
-            throw new WrongDateException ("Booking start time cannot be earlier then end of booking");
-        }
-        if (bookingRequestDto.getStartDate () == bookingRequestDto.getEndDate ()) {
-            throw new WrongDateException ("Booking start time cannot be equals with end date");
-        }
-        if (userId == itemRepository.findById (bookingRequestDto.getItemId ()).orElseThrow (() ->
-                new NoSuchElementException ("Item By id not found")).getOwner ().getId ()) {
-            throw new NoSuchElementException ("user " + userId + " cannot book git own item "
-                    + bookingRequestDto.getItemId ());
+    private void checkItemAvailable(Item item){
+        if (!item.getAvailable()) {
+            throw new ItemNotAvailableException("Item " + item.getId() + " unreliable");
         }
     }
 
-    private Optional<StateStatus> checkStatus (String state) {
-        if (state.isBlank ()) {
-            return Optional.of (StateStatus.ALL);
+    private void checkInputBookingDto(long userId, BookingRequestDto bookingRequestDto) throws ValidationException{
+        if (bookingRequestDto.getStartDate().isAfter(bookingRequestDto.getEndDate())) {
+            throw new WrongDateException("Booking start time cannot be earlier then end of booking");
         }
-        switch (state.toUpperCase ()) {
+        if (bookingRequestDto.getStartDate() == bookingRequestDto.getEndDate()) {
+            throw new WrongDateException("Booking start time cannot be equals with end date");
+        }
+        if (userId == itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
+                new NoSuchElementException("Item By id not found")).getOwner().getId()) {
+            throw new NoSuchElementException("user " + userId + " cannot book git own item "
+                    + bookingRequestDto.getItemId());
+        }
+    }
+
+    private Optional<StateStatus> checkStatus(String state){
+        if (state.isBlank()) {
+            return Optional.of(StateStatus.ALL);
+        }
+        switch (state.toUpperCase()) {
             case "CURRENT":
-                return Optional.of (StateStatus.CURRENT);
+                return Optional.of(StateStatus.CURRENT);
             case "PAST":
-                return Optional.of (StateStatus.PAST);
+                return Optional.of(StateStatus.PAST);
             case "FUTURE":
-                return Optional.of (StateStatus.FUTURE);
+                return Optional.of(StateStatus.FUTURE);
             case "WAITING":
-                return Optional.of (StateStatus.WAITING);
+                return Optional.of(StateStatus.WAITING);
             case "REJECTED":
-                return Optional.of (StateStatus.REJECTED);
+                return Optional.of(StateStatus.REJECTED);
             case "ALL":
-                return Optional.of (StateStatus.ALL);
+                return Optional.of(StateStatus.ALL);
         }
-        return Optional.empty ();
+        return Optional.empty();
     }
 }

@@ -13,33 +13,33 @@ import java.util.NoSuchElementException;
 @Slf4j
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<String> handleValidationException (NoSuchElementException e) {
-        log.error (e.getMessage ());
-        return new ResponseEntity<> (e.getMessage (), HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> handleValidationException(NoSuchElementException e){
+        log.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleNotExistException (AlreadyExistException e) {
-        log.error (e.getMessage ());
-        return new ResponseEntity<> (e.getMessage (), HttpStatus.CONFLICT);
+    public ResponseEntity<String> handleNotExistException(AlreadyExistException e){
+        log.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleItemCheckException (ItemNotAvailableException e) {
-        log.error (e.getMessage ());
-        return new ResponseEntity<> (e.getMessage (), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> handleItemCheckException(ItemNotAvailableException e){
+        log.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleWrongDateException (WrongDateException e) {
-        log.error (e.getMessage ());
-        return new ResponseEntity<> (e.getMessage (), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> handleWrongDateException(WrongDateException e){
+        log.error(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UnsupportedStatusException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleUnsupportedStatusException (UnsupportedStatusException e) {
-        log.error (e.getMessage ());
-        return new ErrorResponse (e.getMessage ());
+    public ErrorResponse handleUnsupportedStatusException(UnsupportedStatusException e){
+        log.error(e.getMessage());
+        return new ErrorResponse(e.getMessage());
     }
 }

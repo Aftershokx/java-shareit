@@ -42,7 +42,8 @@ public class Item {
     private Booking nextBooking;
     @Transient
     private ItemRequest request;
-    public Item (long id, User owner, String name, String description, Boolean available) {
+
+    public Item(long id, User owner, String name, String description, Boolean available){
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -51,15 +52,15 @@ public class Item {
     }
 
     @Override
-    public boolean equals (Object o) {
+    public boolean equals(Object o){
         if (this == o) return true;
-        if (o == null || getClass () != o.getClass ()) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
         return id == item.id;
     }
 
     @Override
-    public int hashCode () {
-        return Objects.hash (id);
+    public int hashCode(){
+        return Objects.hash(id);
     }
 }

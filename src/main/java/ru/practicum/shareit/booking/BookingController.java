@@ -19,37 +19,37 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingResponseDto add (@RequestHeader(USER_HEADER) long userId,
-                                   @Valid @RequestBody BookingRequestDto bookingRequestDto) throws ValidationException {
-        return BookingMapper.toBookingDto (bookingService.add (userId, bookingRequestDto));
+    public BookingResponseDto add(@RequestHeader(USER_HEADER) long userId,
+                                  @Valid @RequestBody BookingRequestDto bookingRequestDto) throws ValidationException{
+        return BookingMapper.toBookingDto(bookingService.add(userId, bookingRequestDto));
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingResponseDto bookingConfirmation (@RequestHeader(USER_HEADER) long userId,
-                                                   @PathVariable Long bookingId,
-                                                   @RequestParam(value = "approved") boolean approved) {
-        return BookingMapper.toBookingDto (bookingService.bookingConfirmation (userId, bookingId, approved));
+    public BookingResponseDto bookingConfirmation(@RequestHeader(USER_HEADER) long userId,
+                                                  @PathVariable Long bookingId,
+                                                  @RequestParam(value = "approved") boolean approved){
+        return BookingMapper.toBookingDto(bookingService.bookingConfirmation(userId, bookingId, approved));
     }
 
     @GetMapping("/{bookingId}")
-    public BookingResponseDto getById (@RequestHeader(USER_HEADER) long userId,
-                                       @PathVariable Long bookingId) {
-        return BookingMapper.toBookingDto (bookingService.getById (userId, bookingId));
+    public BookingResponseDto getById(@RequestHeader(USER_HEADER) long userId,
+                                      @PathVariable Long bookingId){
+        return BookingMapper.toBookingDto(bookingService.getById(userId, bookingId));
     }
 
     @GetMapping
-    public List<BookingResponseDto> getAllBookingByUser (@RequestHeader(USER_HEADER) long userId,
-                                                         @RequestParam(value = "state", required = false,
-                                                                 defaultValue = "ALL") String state) {
-        return bookingService.getAllBookingByUser (userId, state)
-                .stream ().map (BookingMapper::toBookingDto).collect (Collectors.toList ());
+    public List<BookingResponseDto> getAllBookingByUser(@RequestHeader(USER_HEADER) long userId,
+                                                        @RequestParam(value = "state", required = false,
+                                                                defaultValue = "ALL") String state){
+        return bookingService.getAllBookingByUser(userId, state)
+                .stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
     @GetMapping("/owner")
-    public List<BookingResponseDto> getAllBookingByOwner (@RequestHeader(USER_HEADER) long userId,
-                                                          @RequestParam(value = "state", required = false,
-                                                                  defaultValue = "ALL") String state) {
-        return bookingService.getAllBookingByOwner (userId, state)
-                .stream ().map (BookingMapper::toBookingDto).collect (Collectors.toList ());
+    public List<BookingResponseDto> getAllBookingByOwner(@RequestHeader(USER_HEADER) long userId,
+                                                         @RequestParam(value = "state", required = false,
+                                                                 defaultValue = "ALL") String state){
+        return bookingService.getAllBookingByOwner(userId, state)
+                .stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 }
