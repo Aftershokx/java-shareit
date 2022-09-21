@@ -19,14 +19,6 @@ import java.util.Objects;
 @Builder
 public class Item {
 
-    public Item(long id, User owner, String name, String description, Boolean available) {
-        this.id = id;
-        this.owner = owner;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id", nullable = false)
@@ -50,18 +42,24 @@ public class Item {
     private Booking nextBooking;
     @Transient
     private ItemRequest request;
-
+    public Item (long id, User owner, String name, String description, Boolean available) {
+        this.id = id;
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+    }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals (Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass () != o.getClass ()) return false;
         Item item = (Item) o;
         return id == item.id;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public int hashCode () {
+        return Objects.hash (id);
     }
 }

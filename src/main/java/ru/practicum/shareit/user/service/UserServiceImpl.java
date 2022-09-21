@@ -20,49 +20,49 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public List<User> getAll() {
-        return repository.findAll();
+    public List<User> getAll () {
+        return repository.findAll ();
     }
 
     @Override
-    public User getById(long id) {
-        return repository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("User By id + " + id + " not found"));
+    public User getById (long id) {
+        return repository.findById (id).orElseThrow (() ->
+                new NoSuchElementException ("User By id + " + id + " not found"));
     }
 
     @Override
-    public User create(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        return repository.save(user);
+    public User create (UserDto userDto) {
+        User user = UserMapper.toUser (userDto);
+        return repository.save (user);
     }
 
     @Override
-    public void remove(long id) {
-        if (repository.findById(id).isPresent()) {
-            repository.deleteById(id);
+    public void remove (long id) {
+        if (repository.findById (id).isPresent ()) {
+            repository.deleteById (id);
         } else {
-            throw new NoSuchElementException("User By id + " + id + " not found");
+            throw new NoSuchElementException ("User By id + " + id + " not found");
         }
     }
 
     @Override
-    public User update(long userId, User user) {
-        return repository.save(getValidUser(userId, user));
+    public User update (long userId, User user) {
+        return repository.save (getValidUser (userId, user));
     }
 
-    private User getValidUser(long userId, User user) {
-        if (repository.findById(userId).isEmpty()) {
-            throw new NoSuchElementException("User By id + " + userId + " not found");
+    private User getValidUser (long userId, User user) {
+        if (repository.findById (userId).isEmpty ()) {
+            throw new NoSuchElementException ("User By id + " + userId + " not found");
         }
 
-        User updated = repository.findById(userId).get();
-        updated.setId(userId);
+        User updated = repository.findById (userId).get ();
+        updated.setId (userId);
 
-        if (user.getName() != null && !user.getName().isBlank()) {
-            updated.setName(user.getName());
+        if (user.getName () != null && !user.getName ().isBlank ()) {
+            updated.setName (user.getName ());
         }
-        if (user.getEmail() != null && user.getEmail().contains("@") && !user.getEmail().isBlank()) {
-            updated.setEmail(user.getEmail());
+        if (user.getEmail () != null && user.getEmail ().contains ("@") && !user.getEmail ().isBlank ()) {
+            updated.setEmail (user.getEmail ());
         }
 
         return updated;
