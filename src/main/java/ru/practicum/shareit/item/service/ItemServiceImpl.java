@@ -28,7 +28,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentsRepository;
 
     @Override
-    public Item create(long userId, ItemDto itemDto){
+    public Item create(long userId, ItemDto itemDto) {
         User owner = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"));
         Item item = ItemMapper.toItem(owner, itemDto);
@@ -37,7 +37,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item update(long userId, long itemId, ItemDto itemDto){
+    public Item update(long userId, long itemId, ItemDto itemDto) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"));
         Item item = ItemMapper.toItem(user, itemDto);
@@ -45,7 +45,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getById(long id, long userId){
+    public Item getById(long id, long userId) {
         Item item = itemRepository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("Item By id " + id + " not found"));
         itemSetCommentsAndBookings(item);
@@ -57,14 +57,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchByText(String text){
+    public List<Item> searchByText(String text) {
         if (text != null && !text.isBlank())
             return itemRepository.searchByText(text.toLowerCase(Locale.ROOT));
         return new ArrayList<>();
     }
 
     @Override
-    public List<Item> getAllByUser(long userId){
+    public List<Item> getAllByUser(long userId) {
         List<Item> items = new ArrayList<>(itemRepository.findByOwner(userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"))));
         items.forEach(this::itemSetCommentsAndBookings);
@@ -72,13 +72,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public void delete(long userId, long itemId){
+    public void delete(long userId, long itemId) {
         checkOwner(userId, itemId);
         itemRepository.deleteById(itemId);
     }
 
     @Override
-    public Comment addComment(long userId, long itemId, CommentDto commentDto){
+    public Comment addComment(long userId, long itemId, CommentDto commentDto) {
         if (bookingService.checkBooking(userId, itemId, BookingStatus.APPROVED)) {
             return commentsRepository.save(CommentMapper.toComment(commentDto, userRepository.findById(userId).orElseThrow(() ->
                             new NoSuchElementException("User not found")),
@@ -88,14 +88,14 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void checkOwner(Long userId, Long itemId){
+    private void checkOwner(Long userId, Long itemId) {
         Item item = getById(itemId, userId);
         if (item.getOwner().getId() != userId) {
             throw new NoSuchElementException("User does not own this item");
         }
     }
 
-    private Item getValidItemDto(long userId, long itemId, Item item){
+    private Item getValidItemDto(long userId, long itemId, Item item) {
         Item updatedItem = itemRepository.findById(itemId).orElseThrow(
                 () -> new NoSuchElementException("Item By id " + itemId + " not found"));
         if (userRepository.findById(userId).isPresent() && updatedItem.getOwner().getId() != userId)
@@ -111,7 +111,7 @@ public class ItemServiceImpl implements ItemService {
         return updatedItem;
     }
 
-    private void itemSetCommentsAndBookings(Item item){
+    private void itemSetCommentsAndBookings(Item item) {
         item.setComments(new ArrayList<>(commentsRepository.findAllByItem_Id(item.getId())));
         item.setLastBooking(bookingService.getLastBooking(item.getId()).orElse(null));
         item.setNextBooking(bookingService.getNextBooking(item.getId()).orElse(null));

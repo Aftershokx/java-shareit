@@ -20,43 +20,43 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(@RequestHeader(USER_HEADER) long userId, @Valid @RequestBody ItemDto itemDto){
+    public ItemDto create(@RequestHeader(USER_HEADER) long userId, @Valid @RequestBody ItemDto itemDto) {
         return ItemMapper.toItemDto(itemService.create(userId, itemDto));
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId,
-                          @RequestBody ItemDto itemDto){
+                          @RequestBody ItemDto itemDto) {
         return ItemMapper.toItemDto(itemService.update(userId, itemId, itemDto));
     }
 
     @GetMapping("/{id}")
-    public ItemDtoForBooking getById(@RequestHeader(USER_HEADER) long userId, @PathVariable long id){
+    public ItemDtoForBooking getById(@RequestHeader(USER_HEADER) long userId, @PathVariable long id) {
         return ItemMapper.toItemDtoWithBooking(itemService.getById(id, userId));
     }
 
     @GetMapping
-    public List<ItemDtoForBooking> getAllByUser(@RequestHeader(USER_HEADER) long userId){
+    public List<ItemDtoForBooking> getAllByUser(@RequestHeader(USER_HEADER) long userId) {
         return itemService.getAllByUser(userId).stream()
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByText(@RequestParam String text){
+    public List<ItemDto> searchByText(@RequestParam String text) {
         return itemService.searchByText(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
     @DeleteMapping("/{itemId}")
-    public void delete(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId){
+    public void delete(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId) {
         itemService.delete(userId, itemId);
     }
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId,
-                                 @Valid @RequestBody CommentDto commentDto){
+                                 @Valid @RequestBody CommentDto commentDto) {
         return CommentMapper.toCommentDto(itemService.addComment(userId, itemId, commentDto));
     }
 }

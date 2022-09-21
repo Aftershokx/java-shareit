@@ -17,31 +17,31 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<UserDto> getAll(){
+    public List<UserDto> getAll() {
         return userService.getAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public UserDto getById(@PathVariable long id){
+    public UserDto getById(@PathVariable long id) {
         return UserMapper.toUserDto(userService.getById(id));
     }
 
     @PostMapping
-    public UserDto create(@Valid @RequestBody UserDto userDto){
+    public UserDto create(@Valid @RequestBody UserDto userDto) {
         return UserMapper.toUserDto(
                 userService.create(userDto)
         );
     }
 
     @PatchMapping("/{id}")
-    public UserDto update(@PathVariable long id, @RequestBody User user){
+    public UserDto update(@PathVariable long id, @RequestBody User user) {
         return UserMapper.toUserDto(userService.update(id, user));
     }
 
     @DeleteMapping("/{id}")
-    public void remove(@PathVariable long id){
+    public void remove(@PathVariable long id) {
         userService.remove(id);
     }
 }

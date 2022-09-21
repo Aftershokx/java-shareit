@@ -20,27 +20,27 @@ public class BookingController {
 
     @PostMapping
     public BookingResponseDto add(@RequestHeader(USER_HEADER) long userId,
-                                  @Valid @RequestBody BookingRequestDto bookingRequestDto) throws ValidationException{
+                                  @Valid @RequestBody BookingRequestDto bookingRequestDto) throws ValidationException {
         return BookingMapper.toBookingDto(bookingService.add(userId, bookingRequestDto));
     }
 
     @PatchMapping("/{bookingId}")
     public BookingResponseDto bookingConfirmation(@RequestHeader(USER_HEADER) long userId,
                                                   @PathVariable Long bookingId,
-                                                  @RequestParam(value = "approved") boolean approved){
+                                                  @RequestParam(value = "approved") boolean approved) {
         return BookingMapper.toBookingDto(bookingService.bookingConfirmation(userId, bookingId, approved));
     }
 
     @GetMapping("/{bookingId}")
     public BookingResponseDto getById(@RequestHeader(USER_HEADER) long userId,
-                                      @PathVariable Long bookingId){
+                                      @PathVariable Long bookingId) {
         return BookingMapper.toBookingDto(bookingService.getById(userId, bookingId));
     }
 
     @GetMapping
     public List<BookingResponseDto> getAllBookingByUser(@RequestHeader(USER_HEADER) long userId,
                                                         @RequestParam(value = "state", required = false,
-                                                                defaultValue = "ALL") String state){
+                                                                defaultValue = "ALL") String state) {
         return bookingService.getAllBookingByUser(userId, state)
                 .stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
@@ -48,7 +48,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllBookingByOwner(@RequestHeader(USER_HEADER) long userId,
                                                          @RequestParam(value = "state", required = false,
-                                                                 defaultValue = "ALL") String state){
+                                                                 defaultValue = "ALL") String state) {
         return bookingService.getAllBookingByOwner(userId, state)
                 .stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }

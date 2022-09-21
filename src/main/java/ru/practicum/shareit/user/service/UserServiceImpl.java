@@ -20,24 +20,24 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public List<User> getAll(){
+    public List<User> getAll() {
         return repository.findAll();
     }
 
     @Override
-    public User getById(long id){
+    public User getById(long id) {
         return repository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("User By id + " + id + " not found"));
     }
 
     @Override
-    public User create(UserDto userDto){
+    public User create(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
         return repository.save(user);
     }
 
     @Override
-    public void remove(long id){
+    public void remove(long id) {
         if (repository.findById(id).isPresent()) {
             repository.deleteById(id);
         } else {
@@ -46,11 +46,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(long userId, User user){
+    public User update(long userId, User user) {
         return repository.save(getValidUser(userId, user));
     }
 
-    private User getValidUser(long userId, User user){
+    private User getValidUser(long userId, User user) {
         if (repository.findById(userId).isEmpty()) {
             throw new NoSuchElementException("User By id + " + userId + " not found");
         }

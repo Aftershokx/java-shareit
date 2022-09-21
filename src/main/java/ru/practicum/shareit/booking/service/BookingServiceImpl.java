@@ -31,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public Booking add(Long userId, BookingRequestDto bookingRequestDto) throws ValidationException{
+    public Booking add(Long userId, BookingRequestDto bookingRequestDto) throws ValidationException {
         checkInputBookingDto(userId, bookingRequestDto);
         bookingRequestDto.setStatus(BookingStatus.WAITING);
         checkItemAvailable(itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
@@ -43,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking bookingConfirmation(Long userId, Long bookingId, boolean approved){
+    public Booking bookingConfirmation(Long userId, Long bookingId, boolean approved) {
         Booking booking = getBooking(bookingId);
         if (booking.getStatus() == BookingStatus.APPROVED) {
             throw new ItemNotAvailableException("Cant change approved bookings");
@@ -64,7 +64,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking getById(Long userId, Long bookingId){
+    public Booking getById(Long userId, Long bookingId) {
         Booking booking = getBooking(bookingId);
         if (checkOwner(userId, booking) || booking.getBooker().getId() == userId) {
             return booking;
@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookingByUser(Long userId, String state){
+    public List<Booking> getAllBookingByUser(Long userId, String state) {
         userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User By id + " + userId + " not found"));
         switch (checkStatus(state).orElseThrow(() -> new UnsupportedStatusException("Unknown state: " + state))) {
@@ -112,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookingByOwner(Long userId, String state){
+    public List<Booking> getAllBookingByOwner(Long userId, String state) {
         List<Item> items = itemRepository.findByOwner(userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("UserNotFound By id not found")));
         if (items.size() == 0) {
@@ -181,40 +181,40 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Optional<Booking> getLastBooking(long itemId){
+    public Optional<Booking> getLastBooking(long itemId) {
         return bookingRepository.findFirstBookingByItem_IdAndEndIsBeforeOrderByEndDesc(itemId,
                 LocalDateTime.now());
     }
 
     @Override
-    public Optional<Booking> getNextBooking(long itemId){
+    public Optional<Booking> getNextBooking(long itemId) {
         return bookingRepository.findFirstBookingByItem_IdAndStartIsAfterOrderByStart(itemId,
                 LocalDateTime.now());
     }
 
     @Override
-    public boolean checkBooking(long userId, long itemId, BookingStatus status){
+    public boolean checkBooking(long userId, long itemId, BookingStatus status) {
         return bookingRepository.existsBookingByBooker_IdAndItem_IdAndStatusEqualsAndEndIsBefore(userId,
                 itemId, status, LocalDateTime.now());
     }
 
-    private Booking getBooking(Long bookingId){
+    private Booking getBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking with id: "
                         + bookingId + " not exist"));
     }
 
-    private boolean checkOwner(Long userId, Booking booking){
+    private boolean checkOwner(Long userId, Booking booking) {
         return booking.getItem().getOwner().getId() == userId;
     }
 
-    private void checkItemAvailable(Item item){
+    private void checkItemAvailable(Item item) {
         if (!item.getAvailable()) {
             throw new ItemNotAvailableException("Item " + item.getId() + " unreliable");
         }
     }
 
-    private void checkInputBookingDto(long userId, BookingRequestDto bookingRequestDto) throws ValidationException{
+    private void checkInputBookingDto(long userId, BookingRequestDto bookingRequestDto) throws ValidationException {
         if (bookingRequestDto.getStartDate().isAfter(bookingRequestDto.getEndDate())) {
             throw new WrongDateException("Booking start time cannot be earlier then end of booking");
         }
@@ -228,7 +228,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Optional<StateStatus> checkStatus(String state){
+    private Optional<StateStatus> checkStatus(String state) {
         if (state.isBlank()) {
             return Optional.of(StateStatus.ALL);
         }

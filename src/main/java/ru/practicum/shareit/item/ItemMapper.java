@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class ItemMapper {
-    public static ItemDto toItemDto(Item item){
+    public static ItemDto toItemDto(Item item) {
         ItemDto.ItemRequest itemRequest = new ItemDto.ItemRequest();
         if (item.getRequest() != null)
             itemRequest.setId(item.getRequest().getId());
@@ -25,7 +25,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDtoForBooking toItemDtoWithBooking(Item item){
+    public static ItemDtoForBooking toItemDtoWithBooking(Item item) {
         return ItemDtoForBooking.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -48,7 +48,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static Item toItem(User user, ItemDto itemDto){
+    public static Item toItem(User user, ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
