@@ -2,8 +2,8 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -15,59 +15,54 @@ import java.util.NoSuchElementException;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@EntityScan(basePackages = "ru.practicum.shareit.repository")
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     @Override
-    public List<User> getAll () {
-        return repository.getAll ();
+    public List<User> getAll() {
+        return repository.findAll();
     }
 
     @Override
-    public User getById (long id) {
-        return repository.getById (id).orElseThrow (() ->
-                new NoSuchElementException ("User By id + " + id + " not found"));
+    public User getById(long id) {
+        return repository.findById(id).orElseThrow(() ->
+                new NoSuchElementException("User By id + " + id + " not found"));
     }
 
     @Override
-    public User create (UserDto userDto) {
-        User user = UserMapper.toUser (userDto);
-        repository.getByEmail (user.getEmail ()).ifPresent (u -> {
-            throw new AlreadyExistException ("User already exists");
-        });
-        return repository.create (user);
+    public User create(UserDto userDto) {
+        User user = UserMapper.toUser(userDto);
+        return repository.save(user);
     }
 
     @Override
-    public void remove (long id) {
-        if (repository.getById (id).isPresent ()) {
-            repository.remove (id);
+    public void remove(long id) {
+        if (repository.findById(id).isPresent()) {
+            repository.deleteById(id);
         } else {
-            throw new NoSuchElementException ("User By id + " + id + " not found");
+            throw new NoSuchElementException("User By id + " + id + " not found");
         }
     }
 
     @Override
-    public User update (long userId, User user) {
-        return repository.update (userId, getValidUser (userId, user));
+    public User update(long userId, User user) {
+        return repository.save(getValidUser(userId, user));
     }
 
-    private User getValidUser (long userId, User user) {
-        if (repository.getById (userId).isEmpty ()) {
-            throw new NoSuchElementException ("User By id + " + userId + " not found");
+    private User getValidUser(long userId, User user) {
+        if (repository.findById(userId).isEmpty()) {
+            throw new NoSuchElementException("User By id + " + userId + " not found");
         }
 
-        User updated = repository.getById (userId).get ();
-        updated.setId (userId);
+        User updated = repository.findById(userId).get();
+        updated.setId(userId);
 
-        if (user.getName () != null && !user.getName ().isBlank ()) {
-            updated.setName (user.getName ());
+        if (user.getName() != null && !user.getName().isBlank()) {
+            updated.setName(user.getName());
         }
-        if (user.getEmail () != null && user.getEmail ().contains ("@") && !user.getEmail ().isBlank ()) {
-            repository.getByEmail (user.getEmail ()).ifPresent (u -> {
-                throw new AlreadyExistException ("Email already exists");
-            });
-            updated.setEmail (user.getEmail ());
+        if (user.getEmail() != null && user.getEmail().contains("@") && !user.getEmail().isBlank()) {
+            updated.setEmail(user.getEmail());
         }
 
         return updated;
