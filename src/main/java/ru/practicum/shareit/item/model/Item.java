@@ -10,8 +10,7 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @RequiredArgsConstructor
 @Entity
 @Table(name = "items")
@@ -40,15 +39,17 @@ public class Item {
     private Booking lastBooking;
     @Transient
     private Booking nextBooking;
-    @Transient
-    private ItemRequest request;
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest itemRequest;
 
-    public Item(long id, User owner, String name, String description, Boolean available) {
+    public Item(long id, User owner, String name, String description, Boolean available, ItemRequest itemRequest) {
         this.id = id;
         this.owner = owner;
         this.name = name;
         this.description = description;
         this.available = available;
+        this.itemRequest = itemRequest;
     }
 
     @Override

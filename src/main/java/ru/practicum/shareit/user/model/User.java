@@ -6,8 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @RequiredArgsConstructor
 @Entity
 @Table(name = "users")

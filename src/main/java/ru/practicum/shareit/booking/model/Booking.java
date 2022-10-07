@@ -8,8 +8,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "booking")
 @RequiredArgsConstructor
@@ -45,4 +44,5 @@ public class Booking {
     public int hashCode() {
         return Objects.hash(id);
     }
+
 }
