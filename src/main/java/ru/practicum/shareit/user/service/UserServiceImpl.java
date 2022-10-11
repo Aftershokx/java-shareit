@@ -2,8 +2,8 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -15,7 +15,6 @@ import java.util.NoSuchElementException;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@EntityScan(basePackages = "ru.practicum.shareit.repository")
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
@@ -33,6 +32,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
+        if (repository.findById(user.getId()).isPresent()) {
+            throw new AlreadyExistException("User already exists");
+        }
         return repository.save(user);
     }
 

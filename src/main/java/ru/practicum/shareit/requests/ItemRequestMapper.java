@@ -1,25 +1,20 @@
 package ru.practicum.shareit.requests;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
-import ru.practicum.shareit.requests.dto.ItemRequestDtoWithItems;
+import ru.practicum.shareit.requests.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.requests.model.ItemRequest;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Component
+
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ItemRequestMapper {
 
-    private final ItemRepository itemRepository;
-
-    public ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
+    public static ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
@@ -27,7 +22,7 @@ public class ItemRequestMapper {
                 .build();
     }
 
-    public ItemRequest toItemRequest(ItemRequestDto itemRequestDto) {
+    public static ItemRequest toItemRequest(ItemRequestDto itemRequestDto) {
         return ItemRequest.builder()
                 .id(itemRequestDto.getId())
                 .description(itemRequestDto.getDescription())
@@ -36,13 +31,12 @@ public class ItemRequestMapper {
                 .build();
     }
 
-    public ItemRequestDtoWithItems toItemRequestDtoWithItems(ItemRequest itemRequest) {
-        return ItemRequestDtoWithItems.builder()
+    public static ItemRequestResponseDto toItemRequestResponseDto(ItemRequest itemRequest, List<ItemDto> items) {
+        return ItemRequestResponseDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
                 .created(itemRequest.getCreated())
-                .items(itemRepository.findAllByItemRequestId(itemRequest.getId())
-                        .stream().map(ItemMapper::toItemDto).collect(Collectors.toList()))
+                .items(items)
                 .build();
     }
 

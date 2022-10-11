@@ -231,7 +231,7 @@ public class BookingServiceImpl implements BookingService {
         }
         if (userId == itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
                 new NoSuchElementException("Item By id not found")).getOwner().getId()) {
-            throw new NoSuchElementException("user " + userId + " cannot book git own item "
+            throw new NoSuchElementException("user " + userId + " cannot book his own item "
                     + bookingRequestDto.getItemId());
         }
     }

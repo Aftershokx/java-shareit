@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ItemRequestDtoWithItems {
+public class ItemRequestResponseDto {
 
     private Long id;
     private String description;

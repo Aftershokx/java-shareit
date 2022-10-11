@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
-import ru.practicum.shareit.requests.dto.ItemRequestDtoWithItems;
+import ru.practicum.shareit.requests.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.requests.service.ItemRequestService;
 
 import javax.validation.Valid;
@@ -29,20 +29,20 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDtoWithItems> findAll(@RequestHeader(USER_HEADER) long userId) {
+    public List<ItemRequestResponseDto> findAll(@RequestHeader(USER_HEADER) long userId) {
         return service.findAll(userId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDtoWithItems> findByRequestId(@RequestHeader(USER_HEADER) long userId,
-                                                         @RequestParam(defaultValue = "0") @Min(0) int from,
-                                                         @RequestParam(defaultValue = "20") @Positive int size) {
+    public List<ItemRequestResponseDto> findByRequestId(@RequestHeader(USER_HEADER) long userId,
+                                                        @RequestParam(defaultValue = "0") @Min(0) int from,
+                                                        @RequestParam(defaultValue = "20") @Positive int size) {
         return service.findAllWithPageable(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
-    public ItemRequestDtoWithItems findByRequestId(@RequestHeader(USER_HEADER) long userId,
-                                                   @PathVariable long requestId) {
+    public ItemRequestResponseDto findByRequestId(@RequestHeader(USER_HEADER) long userId,
+                                                  @PathVariable long requestId) {
         return service.findById(userId, requestId);
     }
 }

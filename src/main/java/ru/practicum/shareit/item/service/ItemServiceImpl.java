@@ -50,6 +50,7 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"));
         Item item = ItemMapper.toItem(user, itemDto);
+        checkOwner(userId, itemId);
         return itemRepository.save(getValidItemDto(userId, itemId, item));
     }
 
@@ -125,9 +126,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void itemSetCommentsAndBookings(Item item) {
-        item.setComments(new ArrayList<>(commentsRepository.findAllByItem_Id(item.getId())));
-        item.setLastBooking(bookingService.getLastBooking(item.getId()).orElse(null));
-        item.setNextBooking(bookingService.getNextBooking(item.getId()).orElse(null));
+        if (!commentsRepository.findAllByItem_Id(item.getId()).isEmpty()) {
+            item.setComments(new ArrayList<>(commentsRepository.findAllByItem_Id(item.getId())));
+        }
+        if (bookingService.getLastBooking(item.getId()).isPresent()) {
+            item.setLastBooking(bookingService.getLastBooking(item.getId()).get());
+        }
+        if (bookingService.getNextBooking(item.getId()).isPresent()) {
+            item.setNextBooking(bookingService.getNextBooking(item.getId()).get());
+        }
     }
 
 }

@@ -31,7 +31,7 @@ public class BookingMapper {
                 .build();
     }
 
-    public static BookingRequestDto toBookingRequestDto(Booking booking){
+    public static BookingRequestDto toBookingRequestDto(Booking booking) {
         return BookingRequestDto.builder()
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
