@@ -478,6 +478,16 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void getAllByOwnerNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAllBookingByOwner(2L, "ALL", 0, 2));
+
+        assertEquals("UserNotFound By id not found", exception.getMessage());
+    }
+
+    @Test
     void getAllByOwnerIdWithStateCurrent() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
         when(itemRepository.findByOwner(any()))
