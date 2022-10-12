@@ -78,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getAll(Long userId, String state, int from, int size) {
         userRepository.findById(userId).orElseThrow(() ->
-                new NoSuchElementException("User By id + " + userId + " not found"));
+                new NoSuchElementException("User By id " + userId + " not found"));
 
         int page = from / size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("start").descending());

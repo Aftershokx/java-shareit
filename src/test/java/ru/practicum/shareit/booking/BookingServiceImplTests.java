@@ -127,11 +127,43 @@ public class BookingServiceImplTests {
 
     @Test
     void addBookingWhenItemNotAvailableShouldThrowException() {
-        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(anotherItem));
+        Item anotherItemTwo = Item.builder()
+                .id(2L)
+                .name("ItemName2")
+                .description("ItemDesc2")
+                .owner(booker)
+                .available(false)
+                .build();
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(anotherItemTwo));
+
+        ItemNotAvailableException exception = assertThrows(ItemNotAvailableException.class,
+                () -> bookingService.add(1L, bookingInputDto));
+        assertEquals("Item 2 unreliable", exception.getMessage());
+    }
+
+    @Test
+    void addBookingWhenItemNotFoundShouldThrowException() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class,
                 () -> bookingService.add(1L, bookingInputDto));
-        assertEquals("user 1 cannot book his own item 1", exception.getMessage());
+        assertEquals("Item By id not found", exception.getMessage());
+    }
+
+    @Test
+    void addBookingWhenUserNotFoundShouldThrowException() {
+        Item anotherItemTwo = Item.builder()
+                .id(2L)
+                .name("ItemName2")
+                .description("ItemDesc2")
+                .owner(booker)
+                .available(true)
+                .build();
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(anotherItemTwo));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.add(1L, bookingInputDto));
+        assertEquals("UserNotFound By id not found", exception.getMessage());
     }
 
     @Test
@@ -147,6 +179,24 @@ public class BookingServiceImplTests {
         assertEquals(BookingStatus.APPROVED, bookingApproved.getStatus());
 
         verify(bookingRepository, times(1)).save(any());
+    }
+
+    @Test
+    void approveBookingWithApprovedStateShouldThrowException() {
+        Booking bookingNew = Booking.builder()
+                .id(1L)
+                .start(date.minusDays(1))
+                .end(date.minusHours(1))
+                .item(item)
+                .booker(owner)
+                .status(BookingStatus.APPROVED)
+                .build();
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(bookingNew));
+
+        ItemNotAvailableException exception = assertThrows(ItemNotAvailableException.class,
+                () -> bookingService.bookingConfirmation(2L, 1L, true));
+        assertEquals("Cant change approved bookings", exception.getMessage());
+
     }
 
     @Test
@@ -231,6 +281,16 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void getAllByBookerNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "ALL", 0, 2));
+
+        assertEquals("User By id 2 not found", exception.getMessage());
+    }
+
+    @Test
     void getAllByBookerWithoutBookings() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBooker_IdOrderByStartDesc(anyLong(), any()))
@@ -252,7 +312,20 @@ public class BookingServiceImplTests {
         assertEquals(bookings.size(), 1);
         assertEquals(bookings.get(0).getStatus(), BookingStatus.WAITING);
 
-        verify(bookingRepository, times(1)).findAllByBooker_IdAndStatusOrderByStartDesc(anyLong(), any(), any());
+        verify(bookingRepository, times(1))
+                .findAllByBooker_IdAndStatusOrderByStartDesc(anyLong(), any(), any());
+    }
+
+    @Test
+    void getAllByBookerWithStateWaitingNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "WAITING", 0, 2));
+        assertEquals("Waiting bookings for user  " +
+                2 + " not found", exception.getMessage());
     }
 
     @Test
@@ -276,6 +349,18 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void getAllByBookerWithStateRejectedNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "REJECTED", 0, 2));
+        assertEquals("Rejected bookings for user "
+                + 2 + " not found", exception.getMessage());
+    }
+
+    @Test
     void getAllByBookerWithStatePast() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(anyLong(), any(), any()))
@@ -291,6 +376,18 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void getAllByBookerWithStatePastNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "PAST", 0, 2));
+        assertEquals("Past bookings for user "
+                + 2 + " not found", exception.getMessage());
+    }
+
+    @Test
     void getAllByBookerWithStateFuture() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any()))
@@ -299,6 +396,18 @@ public class BookingServiceImplTests {
         List<Booking> bookings = bookingService.getAll(2L, "FUTURE", 0, 2);
         assertNotEquals(bookings, null);
         assertEquals(bookings.size(), 0);
+    }
+
+    @Test
+    void getAllByBookerWithStateFutureNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "FUTURE", 0, 2));
+        assertEquals("Future bookings for user "
+                + 2 + " not found", exception.getMessage());
     }
 
     @Test
@@ -319,6 +428,18 @@ public class BookingServiceImplTests {
         assertNotEquals(bookings, null);
         assertEquals(bookings.size(), 1);
         assertTrue(bookings.get(0).getEnd().isAfter(date));
+    }
+
+    @Test
+    void getAllByBookerWithStateCurrentNotFound() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(), any(), any(), any()))
+                .thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> bookingService.getAll(2L, "CURRENT", 0, 2));
+        assertEquals("Current bookings for user "
+                + 2 + " not found", exception.getMessage());
     }
 
     @Test
