@@ -31,14 +31,4 @@ public class BookingMapper {
                 .build();
     }
 
-    public static BookingRequestDto toBookingRequestDto(Booking booking) {
-        return BookingRequestDto.builder()
-                .id(booking.getId())
-                .bookerId(booking.getBooker().getId())
-                .itemId(booking.getItem().getId())
-                .startDate(booking.getStart())
-                .endDate(booking.getEnd())
-                .status(booking.getStatus())
-                .build();
-    }
 }

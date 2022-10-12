@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.ItemNotAvailableException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.comment.CommentRepository;
@@ -23,8 +24,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -182,6 +182,15 @@ public class ItemServiceImplTests {
     }
 
     @Test
+    void getItemByNotExistedId() {
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        NoSuchElementException e = assertThrows(NoSuchElementException.class,
+                () -> itemService.getById(1L, 1L));
+        assertTrue(e.getMessage().contains("Item By id " + 1 + " not found"));
+    }
+
+    @Test
     void createComment() {
         User booker = User.builder()
                 .id(2L)
@@ -206,6 +215,64 @@ public class ItemServiceImplTests {
         assertEquals("this is comment", commentCreated.getText());
 
         verify(commentRepository, times(1)).save(any());
+    }
+
+    @Test
+    void createCommentThrowsItemNotAvailableException() {
+        User booker = User.builder()
+                .id(2L)
+                .name("BookerName")
+                .email("emailBooker@mail.ru")
+                .build();
+        Comment comment = Comment.builder()
+                .id(1L)
+                .text("this is comment")
+                .item(item)
+                .author(booker)
+                .created(date.plusDays(1))
+                .build();
+        ItemNotAvailableException e = assertThrows(ItemNotAvailableException.class,
+                () -> itemService.addComment(2L, 1L, CommentMapper.toCommentDto(comment)));
+        assertTrue(e.getMessage().contains("no booking"));
+    }
+
+    @Test
+    void createCommentThrowsNoUser() {
+        User booker = User.builder()
+                .id(2L)
+                .name("BookerName")
+                .email("emailBooker@mail.ru")
+                .build();
+        Comment comment = Comment.builder()
+                .id(1L)
+                .text("this is comment")
+                .item(item)
+                .author(booker)
+                .created(date.plusDays(1))
+                .build();
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(bookingService.checkBooking(anyLong(), anyLong(), any())).thenReturn(Boolean.TRUE);
+        NoSuchElementException e = assertThrows(NoSuchElementException.class,
+                () -> itemService.addComment(2L, 1L, CommentMapper.toCommentDto(comment)));
+        assertTrue(e.getMessage().contains("User not found"));
+    }
+
+    @Test
+    void deleteItemThrowsNotOwner() {
+        User newOwner = User.builder()
+                .id(2L)
+                .name("UserName")
+                .email("user@mail.ru").build();
+        Item newItem = Item.builder()
+                .id(2L)
+                .name("new")
+                .description("new")
+                .owner(newOwner)
+                .build();
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(newItem));
+        NoSuchElementException e = assertThrows(NoSuchElementException.class, () ->
+                itemService.delete(1L, 2L));
+        assertTrue(e.getMessage().contains("User does not own this item"));
     }
 
 }

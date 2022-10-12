@@ -13,7 +13,6 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ItemNotAvailableException;
 import ru.practicum.shareit.exception.UnsupportedStatusException;
-import ru.practicum.shareit.exception.WrongDateException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -224,10 +223,10 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkInputBookingDto(long userId, BookingRequestDto bookingRequestDto) throws ValidationException {
         if (bookingRequestDto.getStartDate().isAfter(bookingRequestDto.getEndDate())) {
-            throw new WrongDateException("Booking start time cannot be earlier then end of booking");
+            throw new ItemNotAvailableException("Booking start time cannot be later then end of booking");
         }
         if (bookingRequestDto.getStartDate() == bookingRequestDto.getEndDate()) {
-            throw new WrongDateException("Booking start time cannot be equals with end date");
+            throw new ItemNotAvailableException("Booking start time cannot be equals with end date");
         }
         if (userId == itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() ->
                 new NoSuchElementException("Item By id not found")).getOwner().getId()) {

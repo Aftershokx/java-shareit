@@ -1,5 +1,7 @@
 package ru.practicum.shareit.exception;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +27,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleItemCheckException(ItemNotAvailableException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<String> handleWrongDateException(WrongDateException e) {
+    public ResponseEntity<String> handleItemNotAvailableException(ItemNotAvailableException e) {
         log.error(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -41,5 +37,15 @@ public class ErrorHandler {
     public ErrorResponse handleUnsupportedStatusException(UnsupportedStatusException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
+    }
+
+    @Getter
+    @Setter
+    public static class ErrorResponse {
+        private final String error;
+
+        public ErrorResponse(String error) {
+            this.error = error;
+        }
     }
 }

@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -11,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.util.NestedServletException;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.exception.ItemNotAvailableException;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -19,6 +23,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.model.User;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -27,8 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @WebMvcTest(controllers = ItemController.class)
@@ -148,15 +152,42 @@ public class ItemControllerTests {
 
     @Test
     void getItemById() throws Exception {
-        when(itemService.getById(anyLong(), anyLong())).thenReturn(item);
-
+        User booker = User.builder()
+                .id(2L)
+                .name("BookerName")
+                .email("booker@mail.ru").build();
+        Booking booking = Booking.builder()
+                .id(1L)
+                .start(LocalDateTime.now().minusDays(2))
+                .end(LocalDateTime.now().minusDays(2).plusMinutes(30))
+                .item(item)
+                .booker(booker)
+                .status(BookingStatus.APPROVED)
+                .build();
+        Booking anotherBooking = Booking.builder()
+                .id(1L)
+                .start(LocalDateTime.now().plusDays(1))
+                .end(LocalDateTime.now().plusDays(1))
+                .item(item)
+                .booker(booker)
+                .status(BookingStatus.APPROVED)
+                .build();
+        Item newItem = Item.builder()
+                .id(2)
+                .available(true)
+                .description("itemDesc")
+                .name("newItem")
+                .owner(owner)
+                .bookings(List.of(booking, anotherBooking))
+                .lastBooking(booking)
+                .nextBooking(anotherBooking)
+                .build();
+        when(itemService.getById(anyLong(), anyLong())).thenReturn(newItem);
+        JSONObject jsonObject = new JSONObject(mapper.writeValueAsString(ItemMapper.toItemDtoWithBooking(newItem)));
         mvc.perform(get("/items/" + item.getId())
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(item.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(item.getName())))
-                .andExpect(jsonPath("$.description", is(item.getDescription())))
-                .andExpect(jsonPath("$.available", is(item.getAvailable())));
+                .andExpect(content().json(String.valueOf(jsonObject)));
     }
 
     @Test
@@ -205,6 +236,25 @@ public class ItemControllerTests {
                 .andExpect(jsonPath("$.id", is(comment.getId()), Long.class))
                 .andExpect(jsonPath("$.text", is(comment.getText())))
                 .andExpect(jsonPath("$.authorName", is(owner.getName())));
+    }
+
+    @Test
+    void createCommentWithError() throws Exception {
+        CommentDto comment = CommentDto.builder()
+                .id(1L)
+                .text("this is comment")
+                .authorName("authorName")
+                .build();
+        when(itemService.addComment(anyLong(), anyLong(), any()))
+                .thenThrow(new ItemNotAvailableException("User has no booking for item"));
+
+        mvc.perform(post("/items/" + item.getId() + "/comment")
+                        .content(mapper.writeValueAsString(comment))
+                        .header("X-Sharer-User-Id", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

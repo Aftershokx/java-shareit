@@ -15,6 +15,7 @@ import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.UnsupportedStatusException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -26,8 +27,7 @@ import java.util.NoSuchElementException;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -174,6 +174,20 @@ public class BookingControllerTests {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].status", is(booking.getStatus().toString())))
                 .andExpect(jsonPath("$[1].status", is(notApproveBooking.getStatus().toString())));
+    }
+
+    @Test
+    void getAllByBookerIdWithUnsupportedState() throws Exception {
+        when(bookingService.getAll(anyLong(), any(), anyInt(), anyInt()))
+                .thenThrow(new UnsupportedStatusException("Unknown state"));
+
+        mvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", booker.getId())
+                        .param("state", "UNKNOWN")
+                        .param("from", "0")
+                        .param("size", "2"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Unknown state")));
     }
 
     @Test

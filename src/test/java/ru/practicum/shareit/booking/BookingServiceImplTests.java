@@ -168,6 +168,21 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void rejectBookingTest() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(notApproveBooking));
+        when(bookingRepository.save(any())).thenReturn(notApproveBooking);
+
+        Booking bookingApproved = bookingService.bookingConfirmation(1L, 2L, false);
+        assertEquals(notApproveBooking.getId(), bookingApproved.getId());
+        assertEquals(notApproveBooking.getItem().getId(), bookingApproved.getItem().getId());
+        assertEquals(notApproveBooking.getStart(), bookingApproved.getStart());
+        assertEquals(notApproveBooking.getEnd(), bookingApproved.getEnd());
+        assertEquals(BookingStatus.REJECTED, bookingApproved.getStatus());
+
+        verify(bookingRepository, times(1)).save(any());
+    }
+
+    @Test
     void getBookingByIdByOwner() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
@@ -316,6 +331,16 @@ public class BookingServiceImplTests {
     }
 
     @Test
+    void getAllByOwnerWithStateUnknownShouldThrowException() {
+        when(itemRepository.findByOwner(owner)).thenReturn(List.of(item));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+
+        UnsupportedStatusException exception = assertThrows(UnsupportedStatusException.class,
+                () -> bookingService.getAllBookingByOwner(2L, "OLD", 0, 2));
+        assertEquals("Unknown state: OLD", exception.getMessage());
+    }
+
+    @Test
     void getAllByOwnerId() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
         when(itemRepository.findByOwner(any()))
@@ -331,4 +356,93 @@ public class BookingServiceImplTests {
         verify(bookingRepository, times(2)).findAllByItem_IdOrderByStartDesc(anyLong(), any());
     }
 
+    @Test
+    void getAllByOwnerIdWithStateCurrent() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner(any()))
+                .thenReturn(List.of(item, anotherItem));
+        when(bookingRepository
+                .findAllByItem_IdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(), any(), any(), any()))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.getAllBookingByOwner(1L, "CURRENT", 0, 2);
+        assertNotEquals(bookings, null);
+        assertEquals(bookings.size(), 2);
+        assertEquals(bookings.get(0).getStatus(), BookingStatus.APPROVED);
+
+        verify(bookingRepository, times(2))
+                .findAllByItem_IdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(), any(), any(), any());
+    }
+
+    @Test
+    void getAllByOwnerIdWithStateFuture() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner(any()))
+                .thenReturn(List.of(item, anotherItem));
+        when(bookingRepository
+                .findAllByItem_IdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.getAllBookingByOwner(1L, "FUTURE", 0, 2);
+        assertNotEquals(bookings, null);
+        assertEquals(bookings.size(), 2);
+        assertEquals(bookings.get(0).getStatus(), BookingStatus.APPROVED);
+
+        verify(bookingRepository, times(2))
+                .findAllByItem_IdAndStartIsAfterOrderByStartDesc(anyLong(), any(), any());
+    }
+
+    @Test
+    void getAllByOwnerIdWithStatePast() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner(any()))
+                .thenReturn(List.of(item, anotherItem));
+        when(bookingRepository
+                .findAllByItem_IdAndEndIsBeforeOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.getAllBookingByOwner(1L, "PAST", 0, 2);
+        assertNotEquals(bookings, null);
+        assertEquals(bookings.size(), 2);
+        assertEquals(bookings.get(0).getStatus(), BookingStatus.APPROVED);
+
+        verify(bookingRepository, times(2))
+                .findAllByItem_IdAndEndIsBeforeOrderByStartDesc(anyLong(), any(), any());
+    }
+
+    @Test
+    void getAllByOwnerIdWithStateWaiting() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner(any()))
+                .thenReturn(List.of(item, anotherItem));
+        when(bookingRepository
+                .findAllByItem_IdAndStatusOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.getAllBookingByOwner(1L, "WAITING", 0, 2);
+        assertNotEquals(bookings, null);
+        assertEquals(bookings.size(), 2);
+        assertEquals(bookings.get(0).getStatus(), BookingStatus.APPROVED);
+
+        verify(bookingRepository, times(2))
+                .findAllByItem_IdAndStatusOrderByStartDesc(anyLong(), any(), any());
+    }
+
+    @Test
+    void getAllByOwnerIdWithStateRejected() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwner(any()))
+                .thenReturn(List.of(item, anotherItem));
+        when(bookingRepository
+                .findAllByItem_IdAndStatusOrderByStartDesc(anyLong(), any(), any()))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.getAllBookingByOwner(1L, "REJECTED", 0, 2);
+        assertNotEquals(bookings, null);
+        assertEquals(bookings.size(), 2);
+        assertEquals(bookings.get(0).getStatus(), BookingStatus.APPROVED);
+
+        verify(bookingRepository, times(2))
+                .findAllByItem_IdAndStatusOrderByStartDesc(anyLong(), any(), any());
+    }
 }

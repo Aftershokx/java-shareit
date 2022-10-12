@@ -46,15 +46,6 @@ public class Item {
     @JoinColumn(name = "request_id")
     private ItemRequest itemRequest;
 
-    public Item(long id, User owner, String name, String description, Boolean available, ItemRequest itemRequest) {
-        this.id = id;
-        this.owner = owner;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.itemRequest = itemRequest;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
