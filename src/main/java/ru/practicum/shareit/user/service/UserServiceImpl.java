@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.user.UserMapper;
@@ -12,7 +11,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {

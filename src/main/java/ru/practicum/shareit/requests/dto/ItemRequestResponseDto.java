@@ -2,16 +2,16 @@ package ru.practicum.shareit.requests.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@EqualsAndHashCode
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class ItemRequestResponseDto {
 
