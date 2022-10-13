@@ -1,7 +1,6 @@
 package ru.practicum.shareit.requests;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
@@ -9,14 +8,14 @@ import ru.practicum.shareit.requests.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.requests.service.ItemRequestService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @Validated
 @RequestMapping(path = "/requests")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ItemRequestController {
 
     public static final String USER_HEADER = "X-Sharer-User-Id";
@@ -34,9 +33,9 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestResponseDto> findByRequestId(@RequestHeader(USER_HEADER) long userId,
-                                                        @RequestParam(defaultValue = "0") @Min(0) int from,
-                                                        @RequestParam(defaultValue = "20") @Positive int size) {
+    public List<ItemRequestResponseDto> findAllWithPageable(@RequestHeader(USER_HEADER) long userId,
+                                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                            @RequestParam(defaultValue = "20") @Positive int size) {
         return service.findAllWithPageable(userId, from, size);
     }
 
