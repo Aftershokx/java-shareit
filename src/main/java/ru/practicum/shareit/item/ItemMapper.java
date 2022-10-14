@@ -4,6 +4,7 @@ import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForBooking;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -11,15 +12,17 @@ import java.util.stream.Collectors;
 
 public class ItemMapper {
     public static ItemDto toItemDto(Item item) {
-        ItemDto.ItemRequest itemRequest = new ItemDto.ItemRequest();
-        if (item.getRequest() != null)
-            itemRequest.setId(item.getRequest().getId());
+        Long id = null;
+        ItemRequest request = item.getItemRequest();
+        if (request != null) {
+            id = (request.getId());
+        }
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                .request(itemRequest)
+                .requestId(id)
                 .comments(item.getComments() != null && item.getComments().size() != 0 ? item.getComments().stream()
                         .map(CommentMapper::toCommentDto).collect(Collectors.toList()) : new ArrayList<>())
                 .build();

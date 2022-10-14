@@ -30,4 +30,5 @@ public class BookingMapper {
                 .status(bookingRequestDto.getStatus())
                 .build();
     }
+
 }

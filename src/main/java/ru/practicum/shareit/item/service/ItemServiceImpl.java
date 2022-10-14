@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -13,6 +15,7 @@ import ru.practicum.shareit.item.comment.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.requests.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -26,14 +29,20 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingService bookingService;
     private final CommentRepository commentsRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public Item create(long userId, ItemDto itemDto) {
+    public ItemDto create(long userId, ItemDto itemDto) {
         User owner = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"));
         Item item = ItemMapper.toItem(owner, itemDto);
         item.setOwner(owner);
-        return itemRepository.save(item);
+        Long requestId = itemDto.getRequestId();
+        if (requestId != null) {
+            item.setItemRequest(itemRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new NoSuchElementException("Incorrect RequestId")));
+        }
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
@@ -41,6 +50,7 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("User not found"));
         Item item = ItemMapper.toItem(user, itemDto);
+        checkOwner(userId, itemId);
         return itemRepository.save(getValidItemDto(userId, itemId, item));
     }
 
@@ -57,16 +67,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchByText(String text) {
+    public List<Item> searchByText(String text, int from, int size) {
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
         if (text != null && !text.isBlank())
-            return itemRepository.searchByText(text.toLowerCase(Locale.ROOT));
+            return itemRepository.searchByText(text.toLowerCase(Locale.ROOT), pageable);
         return new ArrayList<>();
     }
 
     @Override
-    public List<Item> getAllByUser(long userId) {
-        List<Item> items = new ArrayList<>(itemRepository.findByOwner(userRepository.findById(userId).orElseThrow(() ->
-                new NoSuchElementException("User not found"))));
+    public List<Item> findAll(long userId, int from, int size) {
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
+        List<Item> items = new ArrayList<>(itemRepository.findByOwnerId(userId, pageable));
         items.forEach(this::itemSetCommentsAndBookings);
         return items.stream().sorted(Comparator.comparing(Item::getId)).collect(Collectors.toList());
     }
@@ -87,6 +100,7 @@ public class ItemServiceImpl implements ItemService {
             throw new ItemNotAvailableException("User " + userId + " has no booking for " + itemId + " item");
         }
     }
+
 
     private void checkOwner(Long userId, Long itemId) {
         Item item = getById(itemId, userId);
@@ -112,8 +126,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void itemSetCommentsAndBookings(Item item) {
-        item.setComments(new ArrayList<>(commentsRepository.findAllByItem_Id(item.getId())));
-        item.setLastBooking(bookingService.getLastBooking(item.getId()).orElse(null));
-        item.setNextBooking(bookingService.getNextBooking(item.getId()).orElse(null));
+        if (!commentsRepository.findAllByItem_Id(item.getId()).isEmpty()) {
+            item.setComments(new ArrayList<>(commentsRepository.findAllByItem_Id(item.getId())));
+        }
+        if (bookingService.getLastBooking(item.getId()).isPresent()) {
+            item.setLastBooking(bookingService.getLastBooking(item.getId()).get());
+        }
+        if (bookingService.getNextBooking(item.getId()).isPresent()) {
+            item.setNextBooking(bookingService.getNextBooking(item.getId()).get());
+        }
     }
+
 }

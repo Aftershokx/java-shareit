@@ -8,18 +8,18 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemService {
-    Item create(long userId, ItemDto itemDto);
+    ItemDto create(long userId, ItemDto itemDto);
 
     Item update(long userId, long itemId, ItemDto itemDto);
 
     Item getById(long id, long userId);
 
-    List<Item> getAllByUser(long userId);
-
-    List<Item> searchByText(String text);
+    List<Item> searchByText(String text, int from, int size);
 
     void delete(long userId, long itemId);
 
     Comment addComment(long userId, long itemId, CommentDto commentDto);
+
+    List<Item> findAll(long userId, int from, int size);
 
 }

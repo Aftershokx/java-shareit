@@ -1,20 +1,20 @@
 package ru.practicum.shareit.requests.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-import java.time.LocalDate;
+import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ItemRequestDto {
-    private Long id;
-    private String description;
-    private User requestor;
-    private LocalDate created;
 
-    @Data
-    public static class User {
-        private Long id;
-    }
+    private Long id;
+    @NotBlank(message = "description should not be blank")
+    private String description;
+    private LocalDateTime created;
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentMapper;
@@ -9,10 +10,13 @@ import ru.practicum.shareit.item.dto.ItemDtoForBooking;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@Validated
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
@@ -21,7 +25,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(@RequestHeader(USER_HEADER) long userId, @Valid @RequestBody ItemDto itemDto) {
-        return ItemMapper.toItemDto(itemService.create(userId, itemDto));
+        return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
@@ -35,16 +39,11 @@ public class ItemController {
         return ItemMapper.toItemDtoWithBooking(itemService.getById(id, userId));
     }
 
-    @GetMapping
-    public List<ItemDtoForBooking> getAllByUser(@RequestHeader(USER_HEADER) long userId) {
-        return itemService.getAllByUser(userId).stream()
-                .map(ItemMapper::toItemDtoWithBooking)
-                .collect(Collectors.toList());
-    }
-
     @GetMapping("/search")
-    public List<ItemDto> searchByText(@RequestParam String text) {
-        return itemService.searchByText(text).stream()
+    public List<ItemDto> searchByText(@RequestParam String text,
+                                      @RequestParam(defaultValue = "0") @Min(0) int from,
+                                      @RequestParam(defaultValue = "20") @Positive int size) {
+        return itemService.searchByText(text, from, size).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -58,5 +57,14 @@ public class ItemController {
     public CommentDto addComment(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId,
                                  @Valid @RequestBody CommentDto commentDto) {
         return CommentMapper.toCommentDto(itemService.addComment(userId, itemId, commentDto));
+    }
+
+    @GetMapping
+    public List<ItemDtoForBooking> findAll(@RequestHeader(USER_HEADER) long userId,
+                                           @RequestParam(defaultValue = "0") @Min(0) int from,
+                                           @RequestParam(defaultValue = "20") @Positive int size) {
+        return itemService.findAll(userId, from, size).stream()
+                .map(ItemMapper::toItemDtoWithBooking)
+                .collect(Collectors.toList());
     }
 }
