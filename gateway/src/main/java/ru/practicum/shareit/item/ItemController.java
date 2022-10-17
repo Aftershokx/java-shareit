@@ -37,7 +37,7 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getById(@RequestHeader(USER_HEADER) long userId, @PathVariable long id) {
-        return itemClient.getById(userId, id);
+        return itemClient.getById(id, userId);
     }
 
     @GetMapping("/search")
@@ -45,11 +45,6 @@ public class ItemController {
                                                @RequestParam(defaultValue = "0") @Min(0) int from,
                                                @RequestParam(defaultValue = "20") @Positive int size) {
         return itemClient.searchByText(text, from, size);
-    }
-
-    @DeleteMapping("/{itemId}")
-    public ResponseEntity<Object> delete(@RequestHeader(USER_HEADER) long userId, @PathVariable long itemId) {
-        return itemClient.delete(userId, itemId);
     }
 
     @PostMapping("/{itemId}/comment")
